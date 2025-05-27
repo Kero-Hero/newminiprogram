@@ -1,10 +1,141 @@
 <!--pages/data/data.wxml-->
 <view class="page">
-  <view class="page-content">
-    <view class="placeholder">
-      <view class="placeholder-icon">📊</view>
-      <view class="placeholder-text">数据管理</view>
-      <view class="placeholder-desc">此页面正在开发中，敬请期待...</view>
+  <!-- 时间筛选区域 -->
+  <view class="filter-section">
+    <view class="filter-header">
+      <text class="filter-title">数据筛选</text>
+      <view class="filter-reset" bindtap="resetFilter">重置</view>
+    </view>
+    <view class="date-filters">
+      <view class="date-item">
+        <text class="date-label">开始时间</text>
+        <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+          <view class="date-picker">
+            <text>{{startDate || '请选择'}}</text>
+            <text class="picker-icon">📅</text>
+          </view>
+        </picker>
+      </view>
+      <view class="date-item">
+        <text class="date-label">结束时间</text>
+        <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+          <view class="date-picker">
+            <text>{{endDate || '请选择'}}</text>
+            <text class="picker-icon">📅</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+    <view class="quick-filters">
+      <view class="quick-filter-item {{activeQuickFilter === 'today' ? 'active' : ''}}" bindtap="setQuickFilter" data-type="today">今天</view>
+      <view class="quick-filter-item {{activeQuickFilter === 'week' ? 'active' : ''}}" bindtap="setQuickFilter" data-type="week">最近7天</view>
+      <view class="quick-filter-item {{activeQuickFilter === 'month' ? 'active' : ''}}" bindtap="setQuickFilter" data-type="month">最近30天</view>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="data-stats">
+    <view class="stat-item">
+      <view class="stat-number">{{totalRecords}}</view>
+      <view class="stat-label">总记录数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{todayRecords}}</view>
+      <view class="stat-label">今日记录</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{activeDevices}}</view>
+      <view class="stat-label">活跃设备</view>
+    </view>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索设备名称或数据内容" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <view class="search-icon">🔍</view>
+    </view>
+    <view class="export-btn" bindtap="exportData">
+      <text>📥 导出</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 数据列表 -->
+  <view class="data-list" wx:else>
+    <view class="data-item" wx:for="{{filteredData}}" wx:key="id" bindtap="viewDataDetail" data-item="{{item}}">
+      <view class="data-header">
+        <view class="device-info">
+          <text class="device-name">{{item.deviceName || '未知设备'}}</text>
+          <text class="data-type">{{item.dataType || '传感器数据'}}</text>
+        </view>
+        <view class="data-time">{{item.formattedTime}}</view>
+      </view>
+      <view class="data-content">
+        <view class="data-value">
+          <text class="value-label">{{item.valueLabel || '数值'}}:</text>
+          <text class="value-number">{{item.value}} {{item.unit || ''}}</text>
+        </view>
+        <view class="data-status">
+          <view class="status-dot {{item.status || 'normal'}}"></view>
+          <text class="status-text">{{item.statusText || '正常'}}</text>
+        </view>
+      </view>
+      <view class="data-metadata" wx:if="{{item.metadata}}">
+        <text class="metadata-text">{{item.metadata}}</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredData.length === 0 && !loading}}">
+      <view class="empty-icon">📊</view>
+      <view class="empty-text">{{searchKeyword ? '未找到相关数据' : '暂无数据记录'}}</view>
+      <view class="empty-desc">{{searchKeyword ? '请尝试其他关键词或调整时间范围' : '设备数据会在这里显示'}}</view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}" bindtap="loadMoreData">
+    <text>加载更多</text>
+  </view>
+
+  <!-- 数据详情弹窗 -->
+  <view class="modal-overlay" wx:if="{{showDataDetail}}" bindtap="hideDataDetail">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">数据详情</text>
+        <view class="modal-close" bindtap="hideDataDetail">✕</view>
+      </view>
+      <view class="modal-body">
+        <view class="detail-item" wx:if="{{selectedData}}">
+          <text class="detail-label">设备名称:</text>
+          <text class="detail-value">{{selectedData.deviceName}}</text>
+        </view>
+        <view class="detail-item" wx:if="{{selectedData}}">
+          <text class="detail-label">数据类型:</text>
+          <text class="detail-value">{{selectedData.dataType}}</text>
+        </view>
+        <view class="detail-item" wx:if="{{selectedData}}">
+          <text class="detail-label">数值:</text>
+          <text class="detail-value">{{selectedData.value}} {{selectedData.unit}}</text>
+        </view>
+        <view class="detail-item" wx:if="{{selectedData}}">
+          <text class="detail-label">记录时间:</text>
+          <text class="detail-value">{{selectedData.timestamp}}</text>
+        </view>
+        <view class="detail-item" wx:if="{{selectedData && selectedData.metadata}}">
+          <text class="detail-label">附加信息:</text>
+          <text class="detail-value">{{selectedData.metadata}}</text>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn btn-primary" bindtap="hideDataDetail">关闭</button>
+      </view>
     </view>
   </view>
 </view> 

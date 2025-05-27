@@ -1,10 +1,144 @@
 <!--pages/log/log.wxml-->
 <view class="page">
-  <view class="page-content">
-    <view class="placeholder">
-      <view class="placeholder-icon">📋</view>
-      <view class="placeholder-text">日志管理</view>
-      <view class="placeholder-desc">此页面正在开发中，敬请期待...</view>
+  <!-- 日志类型切换 -->
+  <view class="log-type-tabs">
+    <view class="tab-item {{activeTab === 'user' ? 'active' : ''}}" bindtap="switchTab" data-tab="user">
+      <text class="tab-text">用户日志</text>
+      <view class="tab-badge" wx:if="{{userLogCount > 0}}">{{userLogCount}}</view>
+    </view>
+    <view class="tab-item {{activeTab === 'device' ? 'active' : ''}}" bindtap="switchTab" data-tab="device">
+      <text class="tab-text">设备日志</text>
+      <view class="tab-badge" wx:if="{{deviceLogCount > 0}}">{{deviceLogCount}}</view>
+    </view>
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-section">
+    <view class="filter-row">
+      <picker mode="selector" range="{{logLevels}}" range-key="label" bindchange="onLogLevelChange">
+        <view class="filter-picker">
+          <text>{{selectedLogLevel.label || '所有级别'}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+      <picker mode="date" value="{{filterDate}}" bindchange="onDateChange">
+        <view class="filter-picker">
+          <text>{{filterDate || '选择日期'}}</text>
+          <text class="picker-icon">📅</text>
+        </view>
+      </picker>
+    </view>
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索日志内容" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <view class="search-icon">🔍</view>
+    </view>
+  </view>
+
+  <!-- 日志统计 -->
+  <view class="log-stats">
+    <view class="stat-item">
+      <view class="stat-number">{{totalLogs}}</view>
+      <view class="stat-label">总日志</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number text-danger">{{errorLogs}}</view>
+      <view class="stat-label">错误</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number text-warning">{{warningLogs}}</view>
+      <view class="stat-label">警告</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number text-success">{{infoLogs}}</view>
+      <view class="stat-label">信息</view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 日志列表 -->
+  <view class="log-list" wx:else>
+    <view class="log-item" wx:for="{{filteredLogs}}" wx:key="id" bindtap="viewLogDetail" data-log="{{item}}">
+      <view class="log-header">
+        <view class="log-level level-{{item.level}}">{{item.levelText}}</view>
+        <view class="log-time">{{item.formattedTime}}</view>
+      </view>
+      <view class="log-content">
+        <text class="log-message">{{item.message || item.action}}</text>
+        <view class="log-meta">
+          <text class="log-source" wx:if="{{item.source}}">来源: {{item.source}}</text>
+          <text class="log-ip" wx:if="{{item.ip}}">IP: {{item.ip}}</text>
+          <text class="log-device" wx:if="{{item.deviceName}}">设备: {{item.deviceName}}</text>
+        </view>
+      </view>
+      <view class="log-details" wx:if="{{item.details}}">
+        <text class="details-text">{{item.details}}</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredLogs.length === 0 && !loading}}">
+      <view class="empty-icon">📋</view>
+      <view class="empty-text">{{searchKeyword ? '未找到相关日志' : '暂无日志记录'}}</view>
+      <view class="empty-desc">{{searchKeyword ? '请尝试其他关键词或调整筛选条件' : (activeTab === 'user' ? '用户操作日志会在这里显示' : '设备操作日志会在这里显示')}}</view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}" bindtap="loadMoreLogs">
+    <text>加载更多</text>
+  </view>
+
+  <!-- 日志详情弹窗 -->
+  <view class="modal-overlay" wx:if="{{showLogDetail}}" bindtap="hideLogDetail">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">日志详情</text>
+        <view class="modal-close" bindtap="hideLogDetail">✕</view>
+      </view>
+      <view class="modal-body">
+        <view class="detail-section" wx:if="{{selectedLog}}">
+          <view class="detail-item">
+            <text class="detail-label">级别:</text>
+            <view class="log-level level-{{selectedLog.level}}">{{selectedLog.levelText}}</view>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">时间:</text>
+            <text class="detail-value">{{selectedLog.timestamp}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">消息:</text>
+            <text class="detail-value">{{selectedLog.message || selectedLog.action}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedLog.source}}">
+            <text class="detail-label">来源:</text>
+            <text class="detail-value">{{selectedLog.source}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedLog.ip}}">
+            <text class="detail-label">IP地址:</text>
+            <text class="detail-value">{{selectedLog.ip}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedLog.deviceName}}">
+            <text class="detail-label">设备:</text>
+            <text class="detail-value">{{selectedLog.deviceName}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedLog.details}}">
+            <text class="detail-label">详细信息:</text>
+            <text class="detail-value">{{selectedLog.details}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedLog.userId}}">
+            <text class="detail-label">用户ID:</text>
+            <text class="detail-value">{{selectedLog.userId}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn btn-primary" bindtap="hideLogDetail">关闭</button>
+      </view>
     </view>
   </view>
 </view> 
