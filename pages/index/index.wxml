@@ -1,0 +1,70 @@
+<!--pages/index/index.wxml-->
+<view class="page">
+  <!-- 顶部欢迎区域 -->
+  <view class="header">
+    <view class="welcome-text">欢迎使用智能设备管理系统</view>
+    <view class="user-info" wx:if="{{isLoggedIn}}">
+      <text>您好，{{userInfo.nickname || '用户'}}</text>
+    </view>
+    <view class="login-tip" wx:else>
+      <text>请先登录以使用完整功能</text>
+    </view>
+  </view>
+
+  <!-- 快捷功能区 -->
+  <view class="quick-actions">
+    <view class="section-title">快捷功能</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="navigateToDevice">
+        <view class="action-icon device-icon"></view>
+        <text class="action-text">设备管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateToData">
+        <view class="action-icon data-icon"></view>
+        <text class="action-text">数据管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateToLog">
+        <view class="action-icon log-icon"></view>
+        <text class="action-text">日志管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateToProfile">
+        <view class="action-icon profile-icon"></view>
+        <text class="action-text">个人中心</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 系统状态概览 -->
+  <view class="status-overview">
+    <view class="section-title">系统概览</view>
+    <view class="status-cards">
+      <view class="status-card">
+        <view class="status-number">{{deviceCount}}</view>
+        <view class="status-label">设备总数</view>
+      </view>
+      <view class="status-card">
+        <view class="status-number">{{onlineDeviceCount}}</view>
+        <view class="status-label">在线设备</view>
+      </view>
+      <view class="status-card">
+        <view class="status-number">{{alertCount}}</view>
+        <view class="status-label">告警数量</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最新日志 -->
+  <view class="recent-logs">
+    <view class="section-title">最新日志</view>
+    <view class="log-list">
+      <view class="log-item" wx:for="{{recentLogs}}" wx:key="id">
+        <view class="log-time">{{item.time}}</view>
+        <view class="log-content">{{item.content}}</view>
+        <view class="log-level log-level-{{item.level}}">{{item.levelText}}</view>
+      </view>
+      <view class="no-data" wx:if="{{recentLogs.length === 0}}">
+        <text>暂无日志数据</text>
+      </view>
+    </view>
+  </view>
+</view> 

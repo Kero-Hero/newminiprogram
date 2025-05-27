@@ -1,0 +1,74 @@
+<!--pages/profile/profile.wxml-->
+<view class="page">
+  <!-- 用户信息区域 -->
+  <view class="user-section" wx:if="{{isLoggedIn}}">
+    <view class="user-avatar">
+      <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="avatar-img"></image>
+    </view>
+    <view class="user-info">
+      <view class="user-name">{{userInfo.nickname || '用户'}}</view>
+      <view class="user-phone">{{userInfo.phone || '未绑定手机号'}}</view>
+    </view>
+  </view>
+
+  <!-- 未登录状态 -->
+  <view class="login-section" wx:else>
+    <view class="login-icon">🔐</view>
+    <view class="login-text">请登录以使用完整功能</view>
+    <button class="login-btn" bindtap="handleLogin" loading="{{loginLoading}}">
+      微信授权登录
+    </button>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section" wx:if="{{isLoggedIn}}">
+    <view class="menu-item" bindtap="navigateToSetting">
+      <view class="menu-icon">⚙️</view>
+      <view class="menu-info">
+        <view class="menu-title">设置</view>
+        <view class="menu-desc">系统设置和偏好</view>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <view class="menu-item" bindtap="navigateToAbout">
+      <view class="menu-icon">ℹ️</view>
+      <view class="menu-info">
+        <view class="menu-title">关于</view>
+        <view class="menu-desc">应用信息和版本</view>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+
+    <view class="menu-item" bindtap="navigateToHelp">
+      <view class="menu-icon">❓</view>
+      <view class="menu-info">
+        <view class="menu-title">帮助与反馈</view>
+        <view class="menu-desc">使用帮助和问题反馈</view>
+      </view>
+      <view class="menu-arrow">></view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions" wx:if="{{isLoggedIn}}">
+    <view class="action-item" bindtap="clearCache">
+      <view class="action-icon">🧹</view>
+      <text class="action-text">清理缓存</text>
+    </view>
+    <view class="action-item" bindtap="checkUpdate">
+      <view class="action-icon">🔄</view>
+      <text class="action-text">检查更新</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section" wx:if="{{isLoggedIn}}">
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+
+  <!-- 版本信息 -->
+  <view class="version-info">
+    <text class="version-text">版本 1.0.0</text>
+  </view>
+</view> 

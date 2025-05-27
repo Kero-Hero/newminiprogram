@@ -1,0 +1,184 @@
+/* pages/index/index.wxss */
+.page {
+  padding-bottom: 100rpx;
+}
+
+/* 头部区域 */
+.header {
+  background: linear-gradient(135deg, #1890ff, #40a9ff);
+  padding: 40rpx 30rpx;
+  color: white;
+  margin-bottom: 30rpx;
+}
+
+.welcome-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.user-info, .login-tip {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+/* 快捷功能区 */
+.quick-actions {
+  padding: 0 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.action-item {
+  background-color: #fff;
+  border-radius: 15rpx;
+  padding: 40rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.action-item:active {
+  transform: scale(0.95);
+}
+
+.action-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-bottom: 20rpx;
+}
+
+.device-icon {
+  background: linear-gradient(45deg, #1890ff, #40a9ff);
+}
+
+.data-icon {
+  background: linear-gradient(45deg, #52c41a, #73d13d);
+}
+
+.log-icon {
+  background: linear-gradient(45deg, #faad14, #ffc53d);
+}
+
+.profile-icon {
+  background: linear-gradient(45deg, #f5222d, #ff4d4f);
+}
+
+.action-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 系统状态概览 */
+.status-overview {
+  padding: 0 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.status-cards {
+  display: flex;
+  gap: 20rpx;
+}
+
+.status-card {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 15rpx;
+  padding: 30rpx 20rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.status-number {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #1890ff;
+  margin-bottom: 10rpx;
+}
+
+.status-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 最新日志 */
+.recent-logs {
+  padding: 0 30rpx;
+}
+
+.log-list {
+  background-color: #fff;
+  border-radius: 15rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.log-item {
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  font-size: 24rpx;
+  color: #999;
+  min-width: 80rpx;
+}
+
+.log-content {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.log-level {
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  color: #fff;
+}
+
+.log-level-info {
+  background-color: #1890ff;
+}
+
+.log-level-warning {
+  background-color: #faad14;
+}
+
+.log-level-error {
+  background-color: #f5222d;
+}
+
+.log-level-success {
+  background-color: #52c41a;
+}
+
+.no-data {
+  padding: 60rpx;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+} 
