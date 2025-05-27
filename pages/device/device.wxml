@@ -1,10 +1,111 @@
 <!--pages/device/device.wxml-->
 <view class="page">
-  <view class="page-content">
-    <view class="placeholder">
-      <view class="placeholder-icon">📱</view>
-      <view class="placeholder-text">设备管理</view>
-      <view class="placeholder-desc">此页面正在开发中，敬请期待...</view>
+  <!-- 顶部搜索栏 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索设备名称或ID" value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <view class="search-icon">🔍</view>
+    </view>
+    <view class="add-device-btn" bindtap="showBindModal">
+      <text>➕ 绑定设备</text>
+    </view>
+  </view>
+
+  <!-- 设备统计 -->
+  <view class="device-stats">
+    <view class="stat-item">
+      <view class="stat-number">{{totalDevices}}</view>
+      <view class="stat-label">总设备</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number text-success">{{onlineDevices}}</view>
+      <view class="stat-label">在线</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number text-warning">{{offlineDevices}}</view>
+      <view class="stat-label">离线</view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 设备列表 -->
+  <view class="device-list" wx:else>
+    <view class="device-item" wx:for="{{filteredDevices}}" wx:key="id" bindtap="viewDeviceDetail" data-device="{{item}}">
+      <view class="device-avatar">
+        <view class="device-icon {{item.status === 'online' ? 'online' : 'offline'}}">📱</view>
+      </view>
+      <view class="device-info">
+        <view class="device-name">{{item.name || '未命名设备'}}</view>
+        <view class="device-desc">
+          <text class="device-id">ID: {{item.id}}</text>
+          <text class="device-type">{{item.type || '未知类型'}}</text>
+        </view>
+        <view class="device-meta">
+          <text class="last-seen">最后在线: {{item.lastSeen || '未知'}}</text>
+        </view>
+      </view>
+      <view class="device-status">
+        <view class="status-dot {{item.status === 'online' ? 'online' : 'offline'}}"></view>
+        <text class="status-text {{item.status === 'online' ? 'text-success' : 'text-warning'}}">
+          {{item.status === 'online' ? '在线' : '离线'}}
+        </text>
+      </view>
+      <view class="device-actions">
+        <view class="action-btn" catchtap="showDeviceMenu" data-device="{{item}}">⋯</view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredDevices.length === 0 && !loading}}">
+      <view class="empty-icon">📱</view>
+      <view class="empty-text">{{searchKeyword ? '未找到相关设备' : '暂无设备'}}</view>
+      <view class="empty-desc">{{searchKeyword ? '请尝试其他关键词' : '点击右上角绑定您的第一台设备'}}</view>
+    </view>
+  </view>
+
+  <!-- 绑定设备弹窗 -->
+  <view class="modal-overlay" wx:if="{{showBindModal}}" bindtap="hideBindModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">绑定设备</text>
+        <view class="modal-close" bindtap="hideBindModal">✕</view>
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">设备ID</text>
+          <input class="form-input" placeholder="请输入设备ID" value="{{bindDeviceId}}" bindinput="onBindDeviceIdInput" />
+        </view>
+        <view class="bind-tips">
+          <text>请输入您要绑定的设备唯一标识符</text>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn btn-secondary" bindtap="hideBindModal">取消</button>
+        <button class="btn btn-primary" bindtap="bindDevice" loading="{{bindLoading}}" disabled="{{!bindDeviceId}}">绑定</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设备操作菜单 -->
+  <view class="modal-overlay" wx:if="{{showDeviceMenu}}" bindtap="hideDeviceMenu">
+    <view class="action-menu" catchtap="">
+      <view class="menu-item" bindtap="viewDeviceDetail" data-device="{{selectedDevice}}">
+        <text class="menu-icon">👀</text>
+        <text class="menu-text">查看详情</text>
+      </view>
+      <view class="menu-item" bindtap="editDevice" data-device="{{selectedDevice}}">
+        <text class="menu-icon">✏️</text>
+        <text class="menu-text">编辑设备</text>
+      </view>
+      <view class="menu-item danger" bindtap="confirmUnbindDevice" data-device="{{selectedDevice}}">
+        <text class="menu-icon">🔗</text>
+        <text class="menu-text">解绑设备</text>
+      </view>
     </view>
   </view>
 </view> 
