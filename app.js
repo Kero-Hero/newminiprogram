@@ -4,7 +4,8 @@ App({
     userInfo: null,
     isLoggedIn: false,
     token: '',
-    baseUrl: 'http://127.0.0.1:5000'
+    expires: '',
+    baseUrl: 'http://localhost:5000'
   },
 
   onLaunch() {
@@ -20,9 +21,21 @@ App({
   // 检查登录状态
   checkLoginStatus() {
     const token = wx.getStorageSync('token')
-    if (token) {
-      this.globalData.token = token
-      this.globalData.isLoggedIn = true
+    const expires = wx.getStorageSync('expires')
+    
+    if (token && expires) {
+      // 检查token是否过期
+      const currentTime = new Date().getTime()
+      const expiresTime = new Date(expires).getTime()
+      
+      if (currentTime < expiresTime) {
+        this.globalData.token = token
+        this.globalData.expires = expires
+        this.globalData.isLoggedIn = true
+      } else {
+        // token已过期，清除本地存储
+        this.logout()
+      }
     }
   },
 
@@ -43,28 +56,51 @@ App({
 
   // 请求登录接口
   requestLogin(code, callback) {
+    console.log('发送登录请求，code:', code)
+    
     wx.request({
       url: `${this.globalData.baseUrl}/auth/wechat_login`,
       method: 'POST',
       header: {
         'Content-Type': 'application/json'
       },
-      data: {
+      data: JSON.stringify({
         code: code
-      },
+      }),
       success: (res) => {
-        if (res.statusCode === 200 && res.data.success) {
-          this.globalData.token = res.data.token
-          this.globalData.isLoggedIn = true
-          this.globalData.userInfo = res.data.userInfo
+        console.log('登录响应状态码:', res.statusCode)
+        console.log('登录响应数据:', res.data)
+        console.log('登录响应头:', res.header)
+        
+        if (res.statusCode === 200) {
+          // 检查响应数据结构
+          const responseData = res.data
           
-          // 存储到本地
-          wx.setStorageSync('token', res.data.token)
-          wx.setStorageSync('userInfo', res.data.userInfo)
-          
-          callback && callback(true)
+          if (responseData && responseData.token && responseData.expires) {
+            this.globalData.token = responseData.token
+            this.globalData.expires = responseData.expires
+            this.globalData.isLoggedIn = true
+            
+            // 如果有用户信息也一并存储
+            if (responseData.userInfo) {
+              this.globalData.userInfo = responseData.userInfo
+              wx.setStorageSync('userInfo', responseData.userInfo)
+            }
+            
+            // 存储token和expires到本地存储
+            wx.setStorageSync('token', responseData.token)
+            wx.setStorageSync('expires', responseData.expires)
+            
+            console.log('登录成功，token已存储')
+            callback && callback(true)
+          } else {
+            console.log('登录失败：响应数据格式不正确', responseData)
+            console.log('期望的字段: token, expires')
+            callback && callback(false)
+          }
         } else {
-          console.log('登录失败', res.data)
+          console.log('登录失败，HTTP状态码:', res.statusCode)
+          console.log('错误信息:', res.data)
           callback && callback(false)
         }
       },
@@ -78,10 +114,12 @@ App({
   // 退出登录
   logout() {
     this.globalData.token = ''
+    this.globalData.expires = ''
     this.globalData.isLoggedIn = false
     this.globalData.userInfo = null
     
     wx.removeStorageSync('token')
+    wx.removeStorageSync('expires')
     wx.removeStorageSync('userInfo')
   },
 
